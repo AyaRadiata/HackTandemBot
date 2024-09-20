@@ -1,9 +1,11 @@
-# TOKEN = "7217611606:AAEhTEpiylRRcsJcsTHq13wWye7H0vosXI8"
-TOKEN = "-"
 
-OPENAI_SK = "-"
+TOKEN = "7052272805:AAHI5uowpda4HL-HqR_vkTSXxUS-7gDMwog"
+
+OPENAI_SK = "sk-a3LJ6z-ntaYMW9Fqb3SQoQwMa2gdDEj3aRWdGp1DVrT3BlbkFJTIS2H-DzOq3--VPGCmlC__Y-N0hjVTlsUzcIQOCPoA"
 
 COUNSELOR_TG_ID = '1391115076'
+
+maxAITrials = 2
 
 files = [
     {
@@ -45,7 +47,7 @@ menu = [
         "callback": "menuBtnQA"
     },
     {
-        "option": "Ask our AI 📲",
+        "option": "Ask our AI 👀",
         "callback": "menuAI"
     },
     {
@@ -53,11 +55,11 @@ menu = [
         "callback": "menuCareer"
     },
     {
-        "option": "Reg in",
+        "option": "Reg in 📲",
         "callback": "reg_in"
     },
     {
-        "option": "Book an appointment",
+        "option": "Book an appointment 📨",
         "callback": "appBook"
     }
 ]

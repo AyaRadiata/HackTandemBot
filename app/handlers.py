@@ -6,9 +6,9 @@ from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
 
-from config import allQA, files, OPENAI_SK, menuText, careerDeterminationLinks
+from config import allQA, files, OPENAI_SK, menuText, careerDeterminationLinks, maxAITrials
 
-from app.database.requests import get_appointment_name, get_appointments_str
+from app.database.requests import set_user
 
 router = Router()
 
@@ -28,11 +28,21 @@ client = OpenAI(
 )
 
 
-def getAiResponse(userPropmpt: str):
+def getAiResponse(userPrompt: str):
     response = client.chat.completions.create(
         messages=[{
             "role": "user",
-            "content": userPropmpt,
+            "content": userPrompt,
+        }],
+        model="gpt-3.5-turbo",
+    )
+    return response.choices[0].message.content
+
+def getAiResponseRelevance(userPrompt: str):
+    response = client.chat.completions.create(
+        messages=[{
+            "role": "user",
+            "content": f'is this question relevant to the topic of school counseling, applying to colleges or universities? Say "Yes" or "No": \n "{userPrompt}" ',
         }],
         model="gpt-3.5-turbo",
     )
@@ -43,6 +53,7 @@ def getAiResponse(userPropmpt: str):
 #### FUNCTIONS ####
 
 dataBook = ""
+aiUsed = 0
 
 def qaPrint():
     strr = ""
@@ -74,11 +85,19 @@ def globalBoolChageToFalse():
     globalBool = False
     return "The session with AI has ended ❗. Now you can use the main menu."
 
+def aiused():
+    global aiUsed
+    aiUsed+=1
+
 ###################
 
 #### REGISTER ####
 
 data = {}
+
+def changeData(newData):
+    global data
+    data = newData
 
 
 @router.callback_query(F.data == "reg_in")
@@ -104,13 +123,17 @@ async def reg_catch_surname(msg: Message, state: FSMContext):
     await state.update_data(number = msg.text)
     global data
     data = await state.get_data()
-    await msg.answer(f'{data["name"]} \n {data["number"]}')
+    changeData(data)
+    await msg.answer('Successfully registered!')
+    await set_user(msg.from_user.id, data["name"], data["surname"], data["number"])
+    await state.clear()
+    await msg.answer(menuText, reply_markup=await kb.inline_menu())
 ###################
 
 @router.message(CommandStart())
 async def cmd_start(msg: Message):
-    await msg.answer("A", reply_markup=kb.main)
-    await msg.answer('Hello!!! I am your School Councilor! Choose the option below to interact with me!', reply_markup=await kb.inline_first_menu())
+    await msg.answer("Hello!!!", reply_markup=kb.main)
+    await msg.answer('I am your School Councilor! Choose the option below to interact with me!', reply_markup=await kb.inline_first_menu())
 
 @router.message(F.text.contains("Main Menu"))
 async def main_menu_show(msg: Message):
@@ -161,7 +184,8 @@ async def menuBtnAppBook(cb: CallbackQuery):
 async def menuBtnAppBookYes(cb: CallbackQuery):
     await cb.answer('')
     changeDataBook(cb.data)
-    await cb.message.answer("Booked successfully!", reply_markup=await kb.inline_menu())
+    await cb.message.answer("Booked successfully!")
+    await cb.message.answer(menuText, reply_markup=await kb.inline_menu())
 
 #### FILES ####
 @router.callback_query(F.data == "f_bragSheet")
@@ -204,8 +228,17 @@ async def quitAI(msg: Message):
 async def takeUsersPrompt(msg: Message):
     if(globalBool == False):
         await msg.reply("Please write to our bot or contact the school counselor if you have any questions.")
+    elif(aiUsed == maxAITrials):
+        await msg.reply("You have ran out of chances.")
+        await msg.answer(globalBoolChageToFalse(),reply_markup=kb.main)
+        
     else:
-        await msg.reply(getAiResponse(msg.text))
+        aiused()
+        if(getAiResponseRelevance(msg.text) == "Yes"):
+            await msg.reply(getAiResponse(msg.text))
+        else:
+            await msg.reply("Sorry, but this question seem to be irrelevant to this chat!")
+        
 
 
 

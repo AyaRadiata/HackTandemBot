@@ -2,11 +2,11 @@ from aiogram import F, Router
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.context import FSMContext  
+from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
 
-from config import allQA, files, OPENAI_SK, menuText, careerDeterminationLinks
+from config import allQA, files, OURAI_SK, menuText, careerDeterminationLinks
 
 from app.database.requests import get_appointment_name, get_appointments_str
 
@@ -24,7 +24,7 @@ from openai import OpenAI
 client = OpenAI(
   organization='org-AnVqaQuoMHqbQQJZlhIbtAYB',
   project='proj_7IGoDPzM2sVNHiSNsEhElmr2',
-  api_key=OPENAI_SK,
+  api_key=OURAI_SK,
 )
 
 
@@ -206,6 +206,3 @@ async def takeUsersPrompt(msg: Message):
         await msg.reply("Please write to our bot or contact the school counselor if you have any questions.")
     else:
         await msg.reply(getAiResponse(msg.text))
-
-
-
